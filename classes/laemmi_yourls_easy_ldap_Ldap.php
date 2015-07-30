@@ -99,9 +99,7 @@ class laemmi_yourls_easy_ldap_Ldap
     protected function init()
     {
         $this->connect();
-        if($this->_options['rdn_username'] && $this->_options['rdn_password']) {
-            $this->login();
-        }
+        $this->login();
 
         return $this;
     }
@@ -113,28 +111,30 @@ class laemmi_yourls_easy_ldap_Ldap
      */
     protected function connect()
     {
-        $this->_connect = ldap_connect($this->_options['host'], $this->_options['port']);
+        $this->_connect = @ldap_connect($this->_options['host'], $this->_options['port']);
         if (!$this->_connect) {
-           throw new laemmi_yourls_easy_ldap_Ldap_Exception('no ldap connection');
+           throw new laemmi_yourls_easy_ldap_Ldap_Exception('can´t connect to ldap server', 1000);
         }
+
+        ldap_set_option($this->_connect, LDAP_OPT_PROTOCOL_VERSION, 3);
     }
 
     /**
      * Login to ldap server
      *
-     * @throws Ldap_Exception
+     * @throws laemmi_yourls_easy_ldap_Ldap_Exception
      */
     protected function login()
     {
-        $bol = ldap_bind($this->_connect, $this->_options['rdn_username'], $this->_options['rdn_password']);
+        $bol = @ldap_bind($this->_connect, $this->_options['rdn_username'], $this->_options['rdn_password']);
 
         if(!$bol) {
-            throw new Ldap_Exception(sprintf(
+            throw new laemmi_yourls_easy_ldap_Ldap_Exception(sprintf(
                 'Could not bind to server %s. Returned Error was: [%s] %s',
                 $this->_options['host'],
                 ldap_errno($this->_connect),
                 ldap_error($this->_connect)
-            ));
+            ), 2000);
         }
     }
 
@@ -148,13 +148,13 @@ class laemmi_yourls_easy_ldap_Ldap
      */
     protected function getSearchEntries($filter, array $attributes = [])
     {
-        $result = ldap_search($this->_connect, $this->_options['base_dn'], $filter, $attributes, 0, 0, 10);
+        $result = @ldap_search($this->_connect, $this->_options['base_dn'], $filter, $attributes, 0, 0, 10);
 
         if (! $result) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('No user with that informations found');
+            throw new laemmi_yourls_easy_ldap_Ldap_Exception('no search result', 3000);
         }
         if (1 > ldap_count_entries($this->_connect, $result)) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('No user with that information found');
+            throw new laemmi_yourls_easy_ldap_Ldap_Exception('No user with that information found', 4000);
         }
 //        if (1 < ldap_count_entries($this->_connect, $result)) {
 //            throw new laemmi_yourls_easy_ldap_Ldap_Exception('More than one user found with that information');
@@ -162,7 +162,7 @@ class laemmi_yourls_easy_ldap_Ldap
 
         $entries = ldap_get_entries($this->_connect, $result);
         if (false === $entries) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('no result set found');
+            throw new laemmi_yourls_easy_ldap_Ldap_Exception('no entries found', 5000);
         }
 
         ldap_free_result($result);
@@ -226,7 +226,7 @@ class laemmi_yourls_easy_ldap_Ldap
         }
         $inter = array_intersect_key($this->_options['allowed_groups'], $groups);
         if(!$inter) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('User is not in allowed group');
+            throw new laemmi_yourls_easy_ldap_Ldap_Exception('User is not in allowed group', 6000);
         }
 
         /**
@@ -235,7 +235,7 @@ class laemmi_yourls_easy_ldap_Ldap
         $link_id = @ldap_bind($this->_connect, $dn, $password);
         @ldap_close($this->_connect);
         if (false === $link_id) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('auth failed');
+            throw new laemmi_yourls_easy_ldap_Ldap_Exception('auth failed, wrong password', 7000);
         }
 
         $this->setGroups($groups);

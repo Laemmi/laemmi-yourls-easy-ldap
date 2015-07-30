@@ -174,7 +174,8 @@ class laemmi_yourls_easy_ldap_plugin
                     $password
                 );
             } catch (laemmi_yourls_easy_ldap_Ldap_Exception $e) {
-                return false;
+                yourls_login_screen($this->mapLdapException($e));
+                die();
             }
             yourls_set_user($username);
 
@@ -327,6 +328,25 @@ class laemmi_yourls_easy_ldap_plugin
         $permissions['action'] = isset($permissions['action']) ? $permissions['action'] : [];
 
         return $permissions;
+    }
+
+    private function mapLdapException(laemmi_yourls_easy_ldap_Ldap_Exception $e)
+    {
+       switch($e->getCode()) {
+           case 1000:
+           case 2000:
+               $msg = 'No connection to LDAP-Server';
+               break;
+           case 3000:
+           case 4000:
+           case 5000:
+           case 6000:
+           case 7000:
+           default:
+               $msg = 'Invalid username or password';
+       }
+
+        return yourls__($msg) . (true === YOURLS_DEBUG ? ' (' . $e->getMessage() . ')' : '');
     }
 
     ####################################################################################################################
