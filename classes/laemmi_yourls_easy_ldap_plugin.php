@@ -32,6 +32,11 @@
 class laemmi_yourls_easy_ldap_plugin
 {
     /**
+     * Localization domain
+     */
+    const LOCALIZED_DOMAIN = 'laemmi_yourls_easy_ldap';
+
+    /**
      * Ldap
      *
      * @var null|laemmi_yourls_easy_ldap_Ldap
@@ -59,10 +64,10 @@ class laemmi_yourls_easy_ldap_plugin
     /**
      * Construct
      *
-     * @param $ldap
+     * @param laemmi_yourls_easy_ldap_Ldap $ldap
      * @param array $options
      */
-    public function __construct($ldap, array $options = [])
+    public function __construct(laemmi_yourls_easy_ldap_Ldap $ldap, array $options = [])
     {
         $this->startSession();
         $this->_ldap = $ldap;
@@ -89,6 +94,7 @@ class laemmi_yourls_easy_ldap_plugin
      */
     protected function action()
     {
+        yourls_add_action('plugins_loaded', [$this, 'load_textdomain']);
         yourls_add_action('pre_login', [$this, 'action_pre_login']);
         yourls_add_action('logout', [$this, 'action_logout']);
         yourls_add_action('auth_successful', [$this, 'action_auth_successful']);
@@ -102,6 +108,11 @@ class laemmi_yourls_easy_ldap_plugin
     }
 
     ####################################################################################################################
+
+    public function load_textdomain()
+    {
+        yourls_load_custom_textdomain('laemmi_yourls_easy_ldap', realpath(dirname( __FILE__ ) . '/../translations'));
+    }
 
     /**
      * Yourls action pre_login
@@ -135,7 +146,7 @@ class laemmi_yourls_easy_ldap_plugin
     {
         switch($this->getRequest('action_old')) {
             case 'edit_display':
-                $return = ['html' => yourls__('Access denied')];
+                $return = ['html' => yourls__('Access denied', self::LOCALIZED_DOMAIN)];
                 break;
             case 'delete':
                 $return = ['success' => 0];
@@ -145,7 +156,7 @@ class laemmi_yourls_easy_ldap_plugin
             default:
                 $return = [
                     'status' => 'fail',
-                    'message' => yourls__('Access denied')
+                    'message' => yourls__('Access denied', self::LOCALIZED_DOMAIN)
                 ];
         }
 
@@ -209,8 +220,8 @@ class laemmi_yourls_easy_ldap_plugin
          */
         if(preg_match('#\/admin\/(.*?)\.php#', $_SERVER['SCRIPT_FILENAME'], $matches)) {
             if (!in_array($matches[1], $this->helperGetAllowedPermissions())) {
-                yourls_add_notice(yourls__('Access denied'));
-                yourls_html_head('accessdenied', yourls__('Access denied'));
+                yourls_add_notice(yourls__('Denied access to this page', self::LOCALIZED_DOMAIN));
+                yourls_html_head('accessdenied', yourls__('Denied access to this page', self::LOCALIZED_DOMAIN));
                 yourls_html_logo();
                 yourls_html_menu();
                 yourls_html_footer();
@@ -333,20 +344,20 @@ class laemmi_yourls_easy_ldap_plugin
     private function mapLdapException(laemmi_yourls_easy_ldap_Ldap_Exception $e)
     {
        switch($e->getCode()) {
-           case 1000:
-           case 2000:
-               $msg = 'No connection to LDAP-Server';
+           case laemmi_yourls_easy_ldap_Ldap::ERROR_COULD_CONNECT_TO_SERVER:
+           case laemmi_yourls_easy_ldap_Ldap::ERROR_COULD_NOT_BIND_TO_SERVER:
+               $msg = yourls__('No connection to LDAP-Server', self::LOCALIZED_DOMAIN);
                break;
-           case 3000:
-           case 4000:
-           case 5000:
-           case 6000:
-           case 7000:
+           case laemmi_yourls_easy_ldap_Ldap::ERROR_NO_SEARCH_RESULT:
+           case laemmi_yourls_easy_ldap_Ldap::ERROR_NO_USER_WITH_INFORMATION_FOUND:
+           case laemmi_yourls_easy_ldap_Ldap::ERROR_NO_ENTRIES_FOUND:
+           case laemmi_yourls_easy_ldap_Ldap::ERROR_USER_IS_NOT_IN_ALLOWED_GROUP:
+           case laemmi_yourls_easy_ldap_Ldap::ERROR_AUTH_FAILED_WRONG_PASSWORD:
            default:
-               $msg = 'Invalid username or password';
+               $msg = yourls__('Invalid username or password', self::LOCALIZED_DOMAIN);
        }
 
-        return yourls__($msg) . (true === YOURLS_DEBUG ? ' (' . $e->getMessage() . ')' : '');
+        return $msg . (true === YOURLS_DEBUG ? ' (' . $e->getMessage() . ')' : '');
     }
 
     ####################################################################################################################
