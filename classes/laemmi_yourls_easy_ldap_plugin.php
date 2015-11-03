@@ -302,7 +302,23 @@ class laemmi_yourls_easy_ldap_plugin
     {
         $permissions = $this->helperGetAllowedPermissions();
 
-        return array_intersect_key($data, $permissions['action']);
+        if(! isset($permissions['action']['add'])) {
+            unset($data['add']);
+        }
+        if(! isset($permissions['action']['edit'])) {
+            unset($data['edit']);
+        }
+        if(! isset($permissions['action']['delete'])) {
+            unset($data['delete']);
+        }
+        if(! isset($permissions['action']['stats'])) {
+            unset($data['stats']);
+        }
+        if(! isset($permissions['action']['share'])) {
+            unset($data['share']);
+        }
+
+        return $data;
     }
 
     ####################################################################################################################
@@ -389,7 +405,7 @@ class laemmi_yourls_easy_ldap_plugin
      */
     private function startSession()
     {
-        session_start();
+        @session_start();
     }
 
     /**
