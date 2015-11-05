@@ -41,18 +41,23 @@ Copyright 2015 laemmi
 if(!defined('YOURLS_ABSPATH'))die();
 
 if (!yourls_is_API()) {
-    require_once 'lib/Plugin.php';
-    require_once 'lib/Ldap.php';
-    new \Laemmi\Yourls\Easy\Ldap\Plugin(new \Laemmi\Yourls\Easy\Ldap\Ldap([
-        'host' => defined('LAEMMI_EASY_LDAP_HOST') ? LAEMMI_EASY_LDAP_HOST : '',
-        'port' => defined('LAEMMI_EASY_LDAP_PORT') ? LAEMMI_EASY_LDAP_PORT : '',
-        'base_dn' => defined('LAEMMI_EASY_LDAP_BASE') ? LAEMMI_EASY_LDAP_BASE : '',
-        'filter' => defined('LAEMMI_EASY_LDAP_FILTER') ? LAEMMI_EASY_LDAP_FILTER : '',
-        'filter_group' => defined('LAEMMI_EASY_LDAP_FILTER_GROUP') ? LAEMMI_EASY_LDAP_FILTER_GROUP : '',
-        'allowed_groups' => defined('LAEMMI_EASY_LDAP_ALLOWED_GROUPS') ? json_decode(LAEMMI_EASY_LDAP_ALLOWED_GROUPS, true) : [],
-        'rdn_username' => defined('LAEMMI_EASY_LDAP_RDN_USERNAME') ? LAEMMI_EASY_LDAP_RDN_USERNAME : '',
-        'rdn_password' => defined('LAEMMI_EASY_LDAP_RDN_PASSWORD') ? LAEMMI_EASY_LDAP_RDN_PASSWORD : ''
-    ]), [
-        'allowed_groups' => defined('LAEMMI_EASY_LDAP_ALLOWED_GROUPS') ? json_decode(LAEMMI_EASY_LDAP_ALLOWED_GROUPS, true) : [],
-    ]);
+    if(class_exists('Laemmi\Yourls\Plugin\AbstractDefault')) {
+        require_once 'lib/Plugin.php';
+        require_once 'lib/Ldap.php';
+        new \Laemmi\Yourls\Easy\Ldap\Plugin([
+                'allowed_groups' => defined('LAEMMI_EASY_LDAP_ALLOWED_GROUPS') ? json_decode(LAEMMI_EASY_LDAP_ALLOWED_GROUPS, true) : [],
+            ],
+            new \Laemmi\Yourls\Easy\Ldap\Ldap([
+            'host' => defined('LAEMMI_EASY_LDAP_HOST') ? LAEMMI_EASY_LDAP_HOST : '',
+            'port' => defined('LAEMMI_EASY_LDAP_PORT') ? LAEMMI_EASY_LDAP_PORT : '',
+            'base_dn' => defined('LAEMMI_EASY_LDAP_BASE') ? LAEMMI_EASY_LDAP_BASE : '',
+            'filter' => defined('LAEMMI_EASY_LDAP_FILTER') ? LAEMMI_EASY_LDAP_FILTER : '',
+            'filter_group' => defined('LAEMMI_EASY_LDAP_FILTER_GROUP') ? LAEMMI_EASY_LDAP_FILTER_GROUP : '',
+            'allowed_groups' => defined('LAEMMI_EASY_LDAP_ALLOWED_GROUPS') ? json_decode(LAEMMI_EASY_LDAP_ALLOWED_GROUPS, true) : [],
+            'rdn_username' => defined('LAEMMI_EASY_LDAP_RDN_USERNAME') ? LAEMMI_EASY_LDAP_RDN_USERNAME : '',
+            'rdn_password' => defined('LAEMMI_EASY_LDAP_RDN_PASSWORD') ? LAEMMI_EASY_LDAP_RDN_PASSWORD : ''
+        ]));
+    } else {
+        echo 'Please install "laemmi-yourls-default-tools" first!';
+    }
 }

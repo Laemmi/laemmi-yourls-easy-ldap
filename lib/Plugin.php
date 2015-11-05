@@ -38,18 +38,19 @@ namespace Laemmi\Yourls\Easy\Ldap;
  * Use
  */
 use \Laemmi\Yourls\Easy\Ldap\Ldap;
+use \Laemmi\Yourls\Plugin\AbstractDefault;
 
 /**
  * Class Plugin
  *
  * @package Laemmi\Yourls\Easy\Ldap
  */
-class Plugin
+class Plugin extends AbstractDefault
 {
     /**
-     * Localization domain
+     * Namespace
      */
-    const LOCALIZED_DOMAIN = 'laemmi_yourls_easy_ldap';
+    const APP_NAMESPACE = 'laemmi-yourls-easy-ldap';
 
     /**
      * Ldap
@@ -77,49 +78,16 @@ class Plugin
     ];
 
     /**
-     * Construct
+     * Constructor
      *
-     * @param \Laemmi\Yourls\Easy\Ldap\Ldap $ldap
      * @param array $options
+     * @param \Laemmi\Yourls\Easy\Ldap\Ldap $ldap
      */
-    public function __construct(Ldap $ldap, array $options = [])
+    public function __construct(array $options = [],Ldap $ldap)
     {
         $this->startSession();
         $this->_ldap = $ldap;
-        $this->setOptions($options);
-        $this->action();
-    }
-
-    /**
-     * Set options
-     *
-     * @param array $options
-     * @return $this
-     */
-    protected function setOptions(array $options)
-    {
-        $options = array_filter($options);
-        $this->_options = array_merge($this->_options, $options);
-
-        return $this;
-    }
-
-    /**
-     * Do action
-     */
-    protected function action()
-    {
-        yourls_add_action('plugins_loaded', [$this, 'load_textdomain']);
-        yourls_add_action('pre_login', [$this, 'action_pre_login']);
-        yourls_add_action('logout', [$this, 'action_logout']);
-        yourls_add_action('auth_successful', [$this, 'action_auth_successful']);
-        yourls_add_action('yourls_ajax_accessdenied', [$this, 'action_yourls_ajax_accessdenied']);
-        yourls_add_action('admin_page_before_form', [$this, 'action_admin_page_before_form']);
-        yourls_add_action('admin_page_before_table', [$this, 'action_admin_page_before_table']);
-
-        yourls_add_filter('is_valid_user', [$this, 'filter_is_valid_user']);
-        yourls_add_filter('admin_links', [$this, 'filter_admin_links']);
-        yourls_add_filter('table_add_row_action_array', [$this, 'filter_table_add_row_action_array']);
+        parent::__construct($options);
     }
 
     ####################################################################################################################
@@ -127,9 +95,9 @@ class Plugin
     /**
      * Yourls action plugins_loaded
      */
-    public function load_textdomain()
+    public function action_plugins_loaded()
     {
-        yourls_load_custom_textdomain(self::LOCALIZED_DOMAIN, realpath(dirname( __FILE__ ) . '/../translations'));
+        yourls_load_custom_textdomain(self::APP_NAMESPACE, realpath(dirname( __FILE__ ) . '/../translations'));
     }
 
     /**
@@ -164,7 +132,7 @@ class Plugin
     {
         switch($this->getRequest('action_old')) {
             case 'edit_display':
-                $return = ['html' => yourls__('Access denied', self::LOCALIZED_DOMAIN)];
+                $return = ['html' => yourls__('Access denied', self::APP_NAMESPACE)];
                 break;
             case 'delete':
                 $return = ['success' => 0];
@@ -174,7 +142,7 @@ class Plugin
             default:
                 $return = [
                     'status' => 'fail',
-                    'message' => yourls__('Access denied', self::LOCALIZED_DOMAIN)
+                    'message' => yourls__('Access denied', self::APP_NAMESPACE)
                 ];
         }
 
@@ -238,8 +206,8 @@ class Plugin
          */
         if(preg_match('#\/admin\/(.*?)\.php#', $_SERVER['SCRIPT_FILENAME'], $matches)) {
             if (!in_array($matches[1], $this->helperGetAllowedPermissions())) {
-                yourls_add_notice(yourls__('Denied access to this page', self::LOCALIZED_DOMAIN));
-                yourls_html_head('accessdenied', yourls__('Denied access to this page', self::LOCALIZED_DOMAIN));
+                yourls_add_notice(yourls__('Denied access to this page', self::APP_NAMESPACE));
+                yourls_html_head('accessdenied', yourls__('Denied access to this page', self::APP_NAMESPACE));
                 yourls_html_logo();
                 yourls_html_menu();
                 yourls_html_footer();
@@ -386,7 +354,7 @@ class Plugin
        switch($e->getCode()) {
            case Ldap::ERROR_COULD_CONNECT_TO_SERVER:
            case Ldap::ERROR_COULD_NOT_BIND_TO_SERVER:
-               $msg = yourls__('No connection to LDAP-Server', self::LOCALIZED_DOMAIN);
+               $msg = yourls__('No connection to LDAP-Server', self::APP_NAMESPACE);
                break;
            case Ldap::ERROR_NO_SEARCH_RESULT:
            case Ldap::ERROR_NO_USER_WITH_INFORMATION_FOUND:
@@ -394,71 +362,9 @@ class Plugin
            case Ldap::ERROR_USER_IS_NOT_IN_ALLOWED_GROUP:
            case Ldap::ERROR_AUTH_FAILED_WRONG_PASSWORD:
            default:
-               $msg = yourls__('Invalid username or password', self::LOCALIZED_DOMAIN);
+               $msg = yourls__('Invalid username or password', self::APP_NAMESPACE);
        }
 
         return $msg . (true === YOURLS_DEBUG ? ' (' . $e->getMessage() . ')' : '');
-    }
-
-    ####################################################################################################################
-
-    /**
-     * Get request value
-     *
-     * @param $key
-     * @return null
-     */
-    private function getRequest($key)
-    {
-        return isset($_REQUEST[$key]) ? $_REQUEST[$key] : null;
-    }
-
-    /**
-     * Set request value
-     *
-     * @param $key
-     * @param $val
-     */
-    private function setRequest($key, $val)
-    {
-        $_REQUEST[$key] = $val;
-    }
-
-    /**
-     * Start session
-     */
-    private function startSession()
-    {
-        @session_start();
-    }
-
-    /**
-     * Set session value
-     *
-     * @param $key
-     * @param $value
-     */
-    private function setSession($key, $value)
-    {
-        $_SESSION['laemmi']['easy_ldap'][$key] = $value;
-    }
-
-    /**
-     * Get session value
-     *
-     * @param $key
-     * @return bool
-     */
-    private function getSession($key)
-    {
-        return isset($_SESSION['laemmi']['easy_ldap'][$key]) ? $_SESSION['laemmi']['easy_ldap'][$key] : false;
-    }
-
-    /**
-     * Reset session
-     */
-    private function resetSession()
-    {
-        unset($_SESSION['laemmi']['easy_ldap']);
     }
 }

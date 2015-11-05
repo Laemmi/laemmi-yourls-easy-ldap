@@ -3,6 +3,7 @@ Plugin for YOURLS 1.7
 
 ##Description
 ldap authentification with page and action permissions by ldap group. Localization for german.
+You must install "laemmi-yourls-default-tools" fist.
 
 ## Installation
 * In /user/plugins, create a new folder named laemmi-yourls-easy-ldap.
