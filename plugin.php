@@ -58,6 +58,8 @@ if (!yourls_is_API()) {
             'rdn_password' => defined('LAEMMI_EASY_LDAP_RDN_PASSWORD') ? LAEMMI_EASY_LDAP_RDN_PASSWORD : ''
         ]));
     } else {
-        echo 'Please install "laemmi-yourls-default-tools" first!';
+        if('activate' === (isset($_GET['action']) ? $_GET['action'] : null) && 'laemmi-yourls-easy-ldap' === $_GET['plugin']) {
+            echo 'Please install "laemmi-yourls-default-tools" first!';
+        }
     }
 }
