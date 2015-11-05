@@ -41,10 +41,9 @@ Copyright 2015 laemmi
 if(!defined('YOURLS_ABSPATH'))die();
 
 if (!yourls_is_API()) {
-    require_once 'classes/laemmi_yourls_easy_ldap_plugin.php';
-    require_once 'classes/laemmi_yourls_easy_ldap_Ldap.php';
-
-    new laemmi_yourls_easy_ldap_plugin(new laemmi_yourls_easy_ldap_Ldap([
+    require_once 'lib/Plugin.php';
+    require_once 'lib/Ldap.php';
+    new \Laemmi\Yourls\Easy\Ldap\Plugin(new \Laemmi\Yourls\Easy\Ldap\Ldap([
         'host' => defined('LAEMMI_EASY_LDAP_HOST') ? LAEMMI_EASY_LDAP_HOST : '',
         'port' => defined('LAEMMI_EASY_LDAP_PORT') ? LAEMMI_EASY_LDAP_PORT : '',
         'base_dn' => defined('LAEMMI_EASY_LDAP_BASE') ? LAEMMI_EASY_LDAP_BASE : '',

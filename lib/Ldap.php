@@ -30,9 +30,22 @@
  * @since       21.07.15
  */
 
-class laemmi_yourls_easy_ldap_Ldap_Exception extends Exception {};
+/**
+ * Namespace
+ */
+namespace Laemmi\Yourls\Easy\Ldap;
 
-class laemmi_yourls_easy_ldap_Ldap
+/**
+ * Require classes
+ */
+require_once 'Ldap/Exception.php';
+
+/**
+ * Class Ldap
+ *
+ * @package Laemmi\Yourls\Easy\Ldap
+ */
+class Ldap
 {
     const ERROR_COULD_CONNECT_TO_SERVER         = 1000;
     const ERROR_COULD_NOT_BIND_TO_SERVER        = 2000;
@@ -101,8 +114,7 @@ class laemmi_yourls_easy_ldap_Ldap
      * Init connection
      *
      * @return $this
-     * @throws Ldap_Exception
-     * @throws laemmi_yourls_easy_ldap_Ldap_Exception
+     * @throws Exception
      */
     protected function init()
     {
@@ -115,13 +127,13 @@ class laemmi_yourls_easy_ldap_Ldap
     /**
      * Connect to ldap server
      *
-     * @throws laemmi_yourls_easy_ldap_Ldap_Exception
+     * @throws Exception
      */
     protected function connect()
     {
         $this->_connect = @ldap_connect($this->_options['host'], $this->_options['port']);
         if (!$this->_connect) {
-           throw new laemmi_yourls_easy_ldap_Ldap_Exception('can´t connect to ldap server', self::ERROR_COULD_CONNECT_TO_SERVER);
+           throw new Exception('can´t connect to ldap server', self::ERROR_COULD_CONNECT_TO_SERVER);
         }
 
         ldap_set_option($this->_connect, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -130,14 +142,14 @@ class laemmi_yourls_easy_ldap_Ldap
     /**
      * Login to ldap server
      *
-     * @throws laemmi_yourls_easy_ldap_Ldap_Exception
+     * @throws Exception
      */
     protected function login()
     {
         $bol = @ldap_bind($this->_connect, $this->_options['rdn_username'], $this->_options['rdn_password']);
 
         if(!$bol) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception(sprintf(
+            throw new Exception(sprintf(
                 'Could not bind to server %s. Returned Error was: [%s] %s',
                 $this->_options['host'],
                 ldap_errno($this->_connect),
@@ -152,17 +164,17 @@ class laemmi_yourls_easy_ldap_Ldap
      * @param $filter
      * @param array $attributes
      * @return array
-     * @throws laemmi_yourls_easy_ldap_Ldap_Exception
+     * @throws Exception
      */
     protected function getSearchEntries($filter, array $attributes = [])
     {
         $result = @ldap_search($this->_connect, $this->_options['base_dn'], $filter, $attributes, 0, 0, 10);
 
         if (! $result) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('no search result', self::ERROR_NO_SEARCH_RESULT);
+            throw new Exception('no search result', self::ERROR_NO_SEARCH_RESULT);
         }
         if (1 > ldap_count_entries($this->_connect, $result)) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('No user with that information found', self::ERROR_NO_USER_WITH_INFORMATION_FOUND);
+            throw new Exception('No user with that information found', self::ERROR_NO_USER_WITH_INFORMATION_FOUND);
         }
 //        if (1 < ldap_count_entries($this->_connect, $result)) {
 //            throw new laemmi_yourls_easy_ldap_Ldap_Exception('More than one user found with that information');
@@ -170,7 +182,7 @@ class laemmi_yourls_easy_ldap_Ldap
 
         $entries = ldap_get_entries($this->_connect, $result);
         if (false === $entries) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('no entries found', self::ERROR_NO_ENTRIES_FOUND);
+            throw new Exception('no entries found', self::ERROR_NO_ENTRIES_FOUND);
         }
 
         ldap_free_result($result);
@@ -204,7 +216,7 @@ class laemmi_yourls_easy_ldap_Ldap
      * @param $username
      * @param $password
      * @return bool
-     * @throws laemmi_yourls_easy_ldap_Ldap_Exception
+     * @throws Exception
      */
     public function auth($username, $password)
     {
@@ -234,7 +246,7 @@ class laemmi_yourls_easy_ldap_Ldap
         }
         $inter = array_intersect_key($this->_options['allowed_groups'], $groups);
         if(!$inter) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('User is not in allowed group', self::ERROR_USER_IS_NOT_IN_ALLOWED_GROUP);
+            throw new Exception('User is not in allowed group', self::ERROR_USER_IS_NOT_IN_ALLOWED_GROUP);
         }
 
         /**
@@ -243,7 +255,7 @@ class laemmi_yourls_easy_ldap_Ldap
         $link_id = @ldap_bind($this->_connect, $dn, $password);
         @ldap_close($this->_connect);
         if (false === $link_id) {
-            throw new laemmi_yourls_easy_ldap_Ldap_Exception('auth failed, wrong password', self::ERROR_AUTH_FAILED_WRONG_PASSWORD);
+            throw new Exception('auth failed, wrong password', self::ERROR_AUTH_FAILED_WRONG_PASSWORD);
         }
 
         $this->setGroups($groups);

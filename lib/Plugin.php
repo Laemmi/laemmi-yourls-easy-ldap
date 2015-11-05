@@ -29,7 +29,22 @@
  * @since     21.07.15
 */
 
-class laemmi_yourls_easy_ldap_plugin
+/**
+ * Namespace
+ */
+namespace Laemmi\Yourls\Easy\Ldap;
+
+/**
+ * Use
+ */
+use \Laemmi\Yourls\Easy\Ldap\Ldap;
+
+/**
+ * Class Plugin
+ *
+ * @package Laemmi\Yourls\Easy\Ldap
+ */
+class Plugin
 {
     /**
      * Localization domain
@@ -39,7 +54,7 @@ class laemmi_yourls_easy_ldap_plugin
     /**
      * Ldap
      *
-     * @var null|laemmi_yourls_easy_ldap_Ldap
+     * @var null|Ldap
      */
     protected $_ldap = null;
 
@@ -64,10 +79,10 @@ class laemmi_yourls_easy_ldap_plugin
     /**
      * Construct
      *
-     * @param laemmi_yourls_easy_ldap_Ldap $ldap
+     * @param \Laemmi\Yourls\Easy\Ldap\Ldap $ldap
      * @param array $options
      */
-    public function __construct(laemmi_yourls_easy_ldap_Ldap $ldap, array $options = [])
+    public function __construct(Ldap $ldap, array $options = [])
     {
         $this->startSession();
         $this->_ldap = $ldap;
@@ -109,9 +124,12 @@ class laemmi_yourls_easy_ldap_plugin
 
     ####################################################################################################################
 
+    /**
+     * Yourls action plugins_loaded
+     */
     public function load_textdomain()
     {
-        yourls_load_custom_textdomain('laemmi_yourls_easy_ldap', realpath(dirname( __FILE__ ) . '/../translations'));
+        yourls_load_custom_textdomain(self::LOCALIZED_DOMAIN, realpath(dirname( __FILE__ ) . '/../translations'));
     }
 
     /**
@@ -184,7 +202,7 @@ class laemmi_yourls_easy_ldap_plugin
                     $username,
                     $password
                 );
-            } catch (laemmi_yourls_easy_ldap_Ldap_Exception $e) {
+            } catch (Exception $e) {
                 yourls_login_screen($this->mapLdapException($e));
                 die();
             }
@@ -357,18 +375,24 @@ class laemmi_yourls_easy_ldap_plugin
         return $permissions;
     }
 
-    private function mapLdapException(laemmi_yourls_easy_ldap_Ldap_Exception $e)
+    /**
+     * Map Ldap exceptions
+     *
+     * @param Exception $e
+     * @return string
+     */
+    private function mapLdapException(Exception $e)
     {
        switch($e->getCode()) {
-           case laemmi_yourls_easy_ldap_Ldap::ERROR_COULD_CONNECT_TO_SERVER:
-           case laemmi_yourls_easy_ldap_Ldap::ERROR_COULD_NOT_BIND_TO_SERVER:
+           case Ldap::ERROR_COULD_CONNECT_TO_SERVER:
+           case Ldap::ERROR_COULD_NOT_BIND_TO_SERVER:
                $msg = yourls__('No connection to LDAP-Server', self::LOCALIZED_DOMAIN);
                break;
-           case laemmi_yourls_easy_ldap_Ldap::ERROR_NO_SEARCH_RESULT:
-           case laemmi_yourls_easy_ldap_Ldap::ERROR_NO_USER_WITH_INFORMATION_FOUND:
-           case laemmi_yourls_easy_ldap_Ldap::ERROR_NO_ENTRIES_FOUND:
-           case laemmi_yourls_easy_ldap_Ldap::ERROR_USER_IS_NOT_IN_ALLOWED_GROUP:
-           case laemmi_yourls_easy_ldap_Ldap::ERROR_AUTH_FAILED_WRONG_PASSWORD:
+           case Ldap::ERROR_NO_SEARCH_RESULT:
+           case Ldap::ERROR_NO_USER_WITH_INFORMATION_FOUND:
+           case Ldap::ERROR_NO_ENTRIES_FOUND:
+           case Ldap::ERROR_USER_IS_NOT_IN_ALLOWED_GROUP:
+           case Ldap::ERROR_AUTH_FAILED_WRONG_PASSWORD:
            default:
                $msg = yourls__('Invalid username or password', self::LOCALIZED_DOMAIN);
        }
