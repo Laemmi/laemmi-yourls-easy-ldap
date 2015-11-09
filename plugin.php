@@ -4,7 +4,7 @@ Plugin Name: laemmi´s easy ldap
 Plugin URI: https://github.com/Laemmi/laemmi-yourls-easy-ldap
 Description: Ldap authentication
 Version: 1.0
-Author: Michael Lämmlein
+Author: laemmi
 Author URI: https://github.com/Laemmi
 Copyright 2015 laemmi
 */
