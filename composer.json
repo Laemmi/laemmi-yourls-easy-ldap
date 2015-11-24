@@ -1,0 +1,18 @@
+{
+  "name": "laemmi/laemmi-yourls-easy-ldap",
+  "type": "yourls-plugin",
+  "description": "Plugin for YOURLS. Bind login username to url entry.",
+  "keywords": ["yourls","plugin","ldap"],
+  "homepage": "https://github.com/laemmi/laemmi-yourls-easy-ldap",
+  "license": "MIT",
+  "authors": [{
+    "name": "Michael Lämmlein",
+    "email": "laemmi@spacerabbit.de",
+    "homepage": "http://www.spacerabbit.de",
+    "role": "Developer"
+  }],
+
+  "require": {
+    "laemmi/laemmi-yourls-default-tools": "^1.0"
+  }
+}
