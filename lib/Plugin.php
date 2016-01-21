@@ -314,19 +314,9 @@ class Plugin extends AbstractDefault
      *
      * @return array
      */
-    private function helperGetAllowedPermissions()
+    protected function helperGetAllowedPermissions()
     {
-        if($this->getSession('login')) {
-            $inter = array_intersect_key($this->_options['allowed_groups'], $this->getSession('groups'));
-            $permissions = [];
-            foreach ($inter as $val) {
-                foreach ($val as $_val) {
-                    $permissions[$_val] = $_val;
-                }
-            }
-        } else {
-            $permissions = array_combine($this->_adminpermission, $this->_adminpermission);
-        }
+        $permissions = parent::helperGetAllowedPermissions();
 
         foreach($permissions as $val) {
             if('admin' === $val) {
