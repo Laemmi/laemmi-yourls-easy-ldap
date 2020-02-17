@@ -1,8 +1,5 @@
 <?php
 /**
- * Copyright 2007-2015 Andreas Heigl/wdv Gesellschaft für Medien & Kommunikation mbH & Co. OHG
- *
- *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
@@ -21,13 +18,12 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * @category    laemmi-yourls-easy-ldap
- * @package     laemmi_yourls_easy_ldap_ldap.php
- * @author      Michael Lämmlein <m.laemmlein@wdv.de>
- * @copyright   ©2007-2015 Andreas Heigl/wdv Gesellschaft für Medien & Kommunikation mbH & Co. OHG
- * @license     http://www.opensource.org/licenses/mit-license.php MIT-License
- * @version     2.7.0
- * @since       21.07.15
+ * @category  laemmi-yourls-easy-ldap
+ * @author    Michael Lämmlein <laemmi@spacerabbit.de>
+ * @copyright ©2015 laemmi
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
+ * @version   1.0
+ * @since     21.07.15
  */
 
 /**
@@ -40,11 +36,6 @@ namespace Laemmi\Yourls\Easy\Ldap;
  */
 require_once 'Ldap/Exception.php';
 
-/**
- * Class Ldap
- *
- * @package Laemmi\Yourls\Easy\Ldap
- */
 class Ldap
 {
     const ERROR_COULD_CONNECT_TO_SERVER         = 1000;
@@ -63,6 +54,13 @@ class Ldap
     protected $_connect = null;
 
     /**
+     * Uid
+     *
+     * @var string
+     */
+    private $uid = '';
+
+    /**
      * Options
      *
      * @var array
@@ -71,8 +69,8 @@ class Ldap
         'host' => '',
         'port' => '389',
         'base_dn' => '',
-        'filter' => '(&(uid=%s)(objectClass=posixAccount))',
-        'filter_group' => '(&(memberuid=%s))',
+        'filter' => '(&(objectClass=posixAccount)(uid=%s))',
+        'filter_group' => '(&(objectClass=posixGroup)(memberuid=%s))',
         'allowed_groups' => [],
         'rdn_username' => '',
         'rdn_password' => '',
@@ -148,7 +146,7 @@ class Ldap
     {
         $bol = @ldap_bind($this->_connect, $this->_options['rdn_username'], $this->_options['rdn_password']);
 
-        if(!$bol) {
+        if (!$bol) {
             throw new Exception(sprintf(
                 'Could not bind to server %s. Returned Error was: [%s] %s',
                 $this->_options['host'],
@@ -170,14 +168,14 @@ class Ldap
     {
         $result = @ldap_search($this->_connect, $this->_options['base_dn'], $filter, $attributes, 0, 0, 10);
 
-        if (! $result) {
+        if (!$result) {
             throw new Exception('no search result', self::ERROR_NO_SEARCH_RESULT);
         }
         if (1 > ldap_count_entries($this->_connect, $result)) {
             throw new Exception('No user with that information found', self::ERROR_NO_USER_WITH_INFORMATION_FOUND);
         }
 //        if (1 < ldap_count_entries($this->_connect, $result)) {
-//            throw new laemmi_yourls_easy_ldap_Ldap_Exception('More than one user found with that information');
+//            throw new Exception('More than one user found with that information');
 //        }
 
         $entries = ldap_get_entries($this->_connect, $result);
@@ -211,6 +209,26 @@ class Ldap
     }
 
     /**
+     * Set uid
+     *
+     * @param $value
+     */
+    private function setUid($value)
+    {
+        $this->uid = $value;
+    }
+
+    /**
+     * Get uid
+     *
+     * @return string
+     */
+    public function getUid()
+    {
+        return $this->uid;
+    }
+
+    /**
      * Auth username and password
      *
      * @param $username
@@ -227,8 +245,7 @@ class Ldap
          */
         $username = trim(preg_replace('/[^a-zA-Z0-9\-\_@\.]/', '', $username));
         $filter = str_replace('%s', $username, $this->_options['filter']);
-        $attributes = array('uid');
-        $entries = $this->getSearchEntries($filter, $attributes);
+        $entries = $this->getSearchEntries($filter, ['uid']);
         $dn = $entries[0]['dn'];
         $uid = $entries[0]['uid'][0];
 
@@ -236,16 +253,15 @@ class Ldap
          * Check if user is in group
          */
         $filter = str_replace('%s', $uid, $this->_options['filter_group']);
-        $attributes = array('cn');
-        $entries = $this->getSearchEntries($filter, $attributes);
+        $entries = $this->getSearchEntries($filter, ['cn']);
         $groups = [];
-        foreach($entries as $val) {
-            if(isset($val['cn'])) {
+        foreach ($entries as $val) {
+            if (isset($val['cn'])) {
                 $groups[$val['cn'][0]] = $val['cn'][0];
             }
         }
         $inter = array_intersect_key($this->_options['allowed_groups'], $groups);
-        if(!$inter) {
+        if (!$inter) {
             throw new Exception('User is not in allowed group', self::ERROR_USER_IS_NOT_IN_ALLOWED_GROUP);
         }
 
@@ -258,6 +274,7 @@ class Ldap
             throw new Exception('auth failed, wrong password', self::ERROR_AUTH_FAILED_WRONG_PASSWORD);
         }
 
+        $this->setUid($uid);
         $this->setGroups($groups);
 
         return true;

@@ -3,7 +3,7 @@
 Plugin Name: laemmi´s easy ldap
 Plugin URI: https://github.com/Laemmi/laemmi-yourls-easy-ldap
 Description: Ldap authentication
-Version: 1.0
+Version: 1.0.2
 Author: laemmi
 Author URI: https://github.com/Laemmi
 Copyright 2015 laemmi
@@ -29,25 +29,27 @@ Copyright 2015 laemmi
  * IN THE SOFTWARE.
  *
  * @category  laemmi-yourls-easy-ldap
- * @package   plugin.php
- * @author    Michael Lämmlein <ml@spacerabbit.de>
+ * @author    Michael Lämmlein <laemmi@spacerabbit.de>
  * @copyright ©2015 laemmi
  * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
  * @version   1.0
  * @since     21.07.15
 */
 
+use Laemmi\Yourls\Easy\Ldap\Ldap;
+use Laemmi\Yourls\Easy\Ldap\Plugin;
+
 // No direct call
-if(!defined('YOURLS_ABSPATH'))die();
+if (!defined('YOURLS_ABSPATH'))die();
 
 if (!yourls_is_API()) {
-    if(class_exists('Laemmi\Yourls\Plugin\AbstractDefault')) {
+    if (class_exists('Laemmi\Yourls\Plugin\AbstractDefault')) {
         require_once 'lib/Plugin.php';
         require_once 'lib/Ldap.php';
-        new \Laemmi\Yourls\Easy\Ldap\Plugin([
+        new Plugin([
                 'allowed_groups' => defined('LAEMMI_EASY_LDAP_ALLOWED_GROUPS') ? json_decode(LAEMMI_EASY_LDAP_ALLOWED_GROUPS, true) : [],
             ],
-            new \Laemmi\Yourls\Easy\Ldap\Ldap([
+            new Ldap([
             'host' => defined('LAEMMI_EASY_LDAP_HOST') ? LAEMMI_EASY_LDAP_HOST : '',
             'port' => defined('LAEMMI_EASY_LDAP_PORT') ? LAEMMI_EASY_LDAP_PORT : '',
             'base_dn' => defined('LAEMMI_EASY_LDAP_BASE') ? LAEMMI_EASY_LDAP_BASE : '',

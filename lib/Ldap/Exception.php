@@ -18,13 +18,12 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * @category    laemmi-yourls-easy-ldap
- * @package     Exception.php
- * @author      Michael Lämmlein <ml@spacerabbit.de>
- * @copyright   ©2015 laemmi
- * @license     http://www.opensource.org/licenses/mit-license.php MIT-License
- * @version     1.0.0
- * @since       05.11.15
+ * @category  laemmi-yourls-easy-ldap
+ * @author    Michael Lämmlein <laemmi@spacerabbit.de>
+ * @copyright ©2015 laemmi
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT-License
+ * @version   1.0
+ * @since     05.11.15
  */
 
 /**
@@ -32,9 +31,4 @@
  */
 namespace Laemmi\Yourls\Easy\Ldap;
 
-/**
- * Class Exception
- *
- * @package Laemmi\Yourls\Easy\Ldap
- */
 class Exception extends \Exception {};
